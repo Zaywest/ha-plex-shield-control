@@ -5,6 +5,12 @@ and it **starts playing on your TV**: no searching, no remote. Choose **Resume**
 **Start over**. While it plays, **drag the progress bar** on the dashboard to jump anywhere in
 the movie **without leaving it**.
 
+![Plex Library card: your whole library as posters, with filters, search and sorting](docs/images/library.jpg)
+
+| Resume or Start over | Episodes of a show | Scrub without leaving the movie |
+|---|---|---|
+| ![Resume or Start over](docs/images/resume-start-over.png) | ![Episode list with Play, Resume and Start over](docs/images/episodes.png) | ![Now Playing card with the scrub bar](docs/images/now-playing-scrub.png) |
+
 Tested with the **Plex for Android TV** app (2026.x, the new React Native app) on an
 **NVIDIA SHIELD (Android 11)**. It should work on other Android TV devices running the same Plex app.
 
@@ -71,7 +77,7 @@ This gives Home Assistant a player entity for your TV's Plex app (used by the No
 4. Open the view and tap **Link this device**. On your phone or computer go to
    **https://plex.tv/link** and enter the 4-letter code. The card connects by itself and shows
    your whole library: posters, search, filters (Everything / Movies / TV Shows / …), sorting,
-   and infinite scroll.
+   and infinite scroll (as in the screenshot at the top of this page).
    * Each browser or tablet links once. The Plex server address and token are saved **only in
      that browser** (localStorage), never in Home Assistant.
    * Tap a show to see its seasons and episodes.
@@ -132,6 +138,11 @@ On the **Plex Library** view, tap a poster:
 * **Show or cartoon:** opens the episode list; each episode has **▶ Play**, or **▶ 12:34**
   and **↺** if it's partly watched.
 
+<p>
+  <img src="docs/images/resume-start-over.png" alt="A partly watched movie offers Resume 40:49 or Start over" width="560"><br>
+  <img src="docs/images/episodes.png" alt="Episode list: Play for new episodes, Resume time and Start over for one in progress" width="420">
+</p>
+
 What happens on the TV:
 
 1. Plex opens the title's page *inside the already-running app*, so there's no logo screen. If
@@ -155,6 +166,8 @@ It shows the artwork, title, synopsis and a progress bar. **Drag or tap the bar*
 and use ←/→ then Enter). A bubble shows the target time, and on release the movie jumps there
 and **keeps playing**: no stop, no reload, accurate to about a second. It works for movies,
 TV episodes and cartoons.
+
+<img src="docs/images/now-playing-scrub.png" alt="Now Playing card: artwork, details and the scrub bar" width="560">
 
 Optional card settings: `shield` (Android TV Remote entity), `receiver` (AV receiver, shows
 audio/video formats), `seek_script`.
@@ -190,6 +203,7 @@ shield/seek-helper/Seek.java       media-session seek helper (source)
 shield/seek-helper/seek.dex        prebuilt helper
 shield/seek-helper/build.sh        rebuild seek.dex (JDK + Google's d8)
 docs/how-it-works.md               the details: links, button ids, seek
+docs/images/                       screenshots
 ```
 
 ## License
