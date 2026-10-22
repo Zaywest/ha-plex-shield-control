@@ -141,6 +141,8 @@ class PlexNowPlayingCard extends HTMLElement {
     @media(prefers-reduced-motion:reduce){#fill{transition:none}}
   `;
 }
-if(!customElements.get('plex-now-playing-card'))customElements.define('plex-now-playing-card',PlexNowPlayingCard);
-window.customCards=window.customCards||[];
-window.customCards.push({type:'plex-now-playing-card',name:'Plex Now Playing',description:'Full artwork, synopsis, receiver formats and live playback progress.'});
+if(!customElements.get('plex-now-playing-card')){
+  customElements.define('plex-now-playing-card',PlexNowPlayingCard);
+  window.customCards=window.customCards||[];
+  window.customCards.push({type:'plex-now-playing-card',name:'Plex Now Playing',description:'Full artwork, synopsis, receiver formats and live playback progress.'});
+}

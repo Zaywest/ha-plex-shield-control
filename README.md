@@ -59,22 +59,30 @@ This gives Home Assistant a player entity for your TV's Plex app (used by the No
 
 ## Step 2: Show your Plex library with posters (Plex Library card)
 
-1. Copy the two card files into Home Assistant's `www` folder, using the **File editor** or
-   **Studio Code Server** add-on, or Samba:
-   ```
-   /config/www/plex-cards/plex-library-card.js
-   /config/www/plex-cards/plex-now-playing-card.js
-   ```
-2. **Settings → Dashboards → ⋮ → Resources → Add resource** (turn on *Advanced mode* in your
-   profile if you don't see Resources):
-   * `/local/plex-cards/plex-library-card.js`, type **JavaScript module**
-   * `/local/plex-cards/plex-now-playing-card.js`, type **JavaScript module**
-3. Add a dashboard view with the card. A **panel** view gives it the full width:
+1. Install the cards. Both come in one file.
+
+   **Option A: HACS (easiest)**
+   1. Open **HACS**, then **⋮** (top right), then **Custom repositories**.
+   2. Repository: `https://github.com/Zaywest/ha-plex-shield-control`. Type: **Dashboard**. Select **Add**.
+   3. Search HACS for **Plex Direct Play & Scrub**, open it, and select **Download**.
+   4. Reload the browser page when HACS asks. HACS adds the dashboard resource for you.
+
+   HACS installs only the two cards. The scripts (Step 5) and the TV helper files (Step 4)
+   still need to be set up by hand.
+
+   **Option B: manual**
+   1. Copy [`dist/ha-plex-shield-control.js`](dist/ha-plex-shield-control.js) to
+      `/config/www/ha-plex-shield-control.js`, using the **File editor** or **Studio Code
+      Server** add-on, or Samba.
+   2. **Settings → Dashboards → ⋮ → Resources → Add resource** (turn on *Advanced mode* in your
+      profile if you don't see Resources): URL `/local/ha-plex-shield-control.js`, type
+      **JavaScript module**.
+2. Add a dashboard view with the card. A **panel** view gives it the full width:
    ```yaml
    type: custom:plex-library-card
    ```
    (Full example: [`homeassistant/dashboard-example.yaml`](homeassistant/dashboard-example.yaml).)
-4. Open the view and tap **Link this device**. On your phone or computer go to
+3. Open the view and tap **Link this device**. On your phone or computer go to
    **https://plex.tv/link** and enter the 4-letter code. The card connects by itself and shows
    your whole library: posters, search, filters (Everything / Movies / TV Shows / …), sorting,
    and infinite scroll (as in the screenshot at the top of this page).
@@ -194,6 +202,9 @@ audio/video formats), `seek_script`.
 ## Files
 
 ```
+dist/ha-plex-shield-control.js     both cards in one file (what HACS installs)
+hacs.json                          HACS settings
+build-dist.sh                      rebuilds dist/ from cards/
 cards/plex-library-card.js         Plex Library dashboard card (posters, Play / Resume / Start over)
 cards/plex-now-playing-card.js     Now Playing card with the scrub bar
 homeassistant/scripts.yaml         script.plex_library_play + script.plex_seek

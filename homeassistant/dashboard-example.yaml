@@ -1,11 +1,9 @@
 # Example dashboard views for the two cards.
 #
-# 1) Copy the card files into Home Assistant:
-#      /config/www/plex-cards/plex-library-card.js
-#      /config/www/plex-cards/plex-now-playing-card.js
-# 2) Register them: Settings > Dashboards > ⋮ (top right) > Resources > Add resource
-#      URL: /local/plex-cards/plex-library-card.js        Type: JavaScript module
-#      URL: /local/plex-cards/plex-now-playing-card.js    Type: JavaScript module
+# 1) Install the cards: HACS (custom repository, type Dashboard) or copy
+#    dist/ha-plex-shield-control.js to /config/www/ (both cards are in that one file).
+# 2) Manual install only: Settings > Dashboards > ⋮ (top right) > Resources > Add resource
+#      URL: /local/ha-plex-shield-control.js    Type: JavaScript module
 #    (If you don't see "Resources", turn on Advanced mode in your user profile.)
 # 3) Add the views below to a dashboard (Edit dashboard > ⋮ > Raw configuration editor),
 #    or add each card from the UI with "Manual" and paste just the card part.
