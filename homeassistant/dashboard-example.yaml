@@ -1,0 +1,42 @@
+# Example dashboard views for the two cards.
+#
+# 1) Copy the card files into Home Assistant:
+#      /config/www/plex-cards/plex-library-card.js
+#      /config/www/plex-cards/plex-now-playing-card.js
+# 2) Register them: Settings > Dashboards > ⋮ (top right) > Resources > Add resource
+#      URL: /local/plex-cards/plex-library-card.js        Type: JavaScript module
+#      URL: /local/plex-cards/plex-now-playing-card.js    Type: JavaScript module
+#    (If you don't see "Resources", turn on Advanced mode in your user profile.)
+# 3) Add the views below to a dashboard (Edit dashboard > ⋮ > Raw configuration editor),
+#    or add each card from the UI with "Manual" and paste just the card part.
+#
+# Replace media_player.plex_your_tv with the Plex player entity Home Assistant creates for
+# your TV's Plex app (it appears after the Plex Media Server integration sees it play once;
+# e.g. media_player.plex_plex_for_android_tv_shield_android_tv).
+
+views:
+  - title: Plex Library
+    path: plex-library
+    icon: mdi:plex
+    type: panel                    # one full-width card
+    cards:
+      - type: custom:plex-library-card
+        # play_script: script.plex_library_play   # default
+        # home_path: /lovelace/now-playing       # optional "Back" button target
+
+  - title: Now Playing
+    path: now-playing
+    icon: mdi:play-box-outline
+    cards:
+      # Show the card only while something is playing or paused
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: media_player.plex_your_tv
+            state_not: unavailable
+        card:
+          type: custom:plex-now-playing-card
+          plex: media_player.plex_your_tv
+          # shield: media_player.shield_android_tv    # optional (Android TV Remote integration)
+          # receiver: media_player.your_av_receiver   # optional (shows audio/video formats)
+          # seek_script: script.plex_seek             # default

@@ -1,0 +1,112 @@
+# Home Assistant scripts for the Plex Library card (direct play) and the Plex Now Playing card (scrub).
+# Paste into your scripts.yaml (or Settings > Automations & Scenes > Scripts > ⋮ > Edit in YAML),
+# then change `tv:` in BOTH scripts to your Android TV (ADB) media_player entity.
+#
+# They call /data/local/tmp/plexplay.sh on the TV (see shield/README in the repo) through the
+# Android TV integration's androidtv.adb_command service. That script answers OK / WAIT / FAIL:<why>
+# on its last line, which these scripts read from the entity's `adb_response` attribute.
+
+plex_library_play:
+  alias: Play from Plex library
+  description: >-
+    Opens a title from your Plex library on the Android TV / SHIELD with Plex's own in-app
+    library link (inside the running Plex app, no restart) and presses Watch/Resume, or
+    Plex's Restart button when start_over is on. Posts a notification if it can't.
+  icon: mdi:plex
+  mode: restart
+  fields:
+    uri:
+      name: Plex library link
+      description: plex://libraries/<serverId>/movie/<slug>/<key> (the Plex Library card fills this in)
+      required: true
+      selector: { text: {} }
+    start_over:
+      name: Start from the beginning
+      default: false
+      selector: { boolean: {} }
+  variables:
+    tv: media_player.android_tv     # <-- CHANGE to your Android TV (ADB) entity
+  sequence:
+    - variables:
+        u64: "{{ (uri or '') | base64_encode }}"
+        mode: "{{ 'start' if (start_over | default(false)) else 'resume' }}"
+    - action: persistent_notification.dismiss
+      data: { notification_id: plex_library_play }
+
+    # OPTIONAL: get your TV / projector / receiver ready first, for example:
+    # - action: script.turn_on_tv_and_receiver
+
+    - if: "{{ (uri or '') | length == 0 }}"
+      then:
+        - action: persistent_notification.create
+          data:
+            notification_id: plex_library_play
+            title: Plex library play
+            message: No library link was sent. Refresh the dashboard so it loads the current Plex Library card.
+        - stop: No library link
+          error: true
+
+    # 1) open the title's page in Plex
+    - action: androidtv.adb_command
+      target: { entity_id: "{{ tv }}" }
+      data: { command: 'sh /data/local/tmp/plexplay.sh open "{{ u64 }}"' }
+    - if: "{{ (((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last) != 'OK' }}"
+      then:
+        - action: persistent_notification.create
+          data:
+            notification_id: plex_library_play
+            title: Plex library play
+            message: "Could not open {{ uri }} on the TV ({{ ((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last }})."
+        - stop: open failed
+          error: true
+
+    # 2) press Watch / Resume (or Restart), retrying until playback actually starts
+    - repeat:
+        sequence:
+          - action: androidtv.adb_command
+            target: { entity_id: "{{ tv }}" }
+            data: { command: 'sh /data/local/tmp/plexplay.sh play {{ mode }}' }
+          - variables:
+              last: "{{ ((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last }}"
+          - if: "{{ last in ['WAIT', ''] }}"
+            then: [ { delay: { milliseconds: 400 } } ]
+        until: "{{ (((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last) not in ['WAIT', ''] or repeat.index >= 30 }}"
+    - if: "{{ (((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last) != 'OK' }}"
+      then:
+        - action: persistent_notification.create
+          data:
+            notification_id: plex_library_play
+            title: Plex library play
+            message: "Could not start {{ uri }} on the TV ({{ ((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last }})."
+        - stop: play failed
+          error: true
+
+
+plex_seek:
+  alias: Seek Plex player
+  description: >-
+    Jumps the title playing in Plex on the Android TV / SHIELD to a position (seconds) without
+    leaving the movie, using Plex's own media-session "seek to" (helper seek.dex).
+    Used by the Plex Now Playing card's scrub bar.
+  icon: mdi:fast-forward
+  mode: restart
+  fields:
+    seconds:
+      name: Target position (seconds)
+      required: true
+      selector: { number: { min: 0, max: 100000, mode: box } }
+  variables:
+    tv: media_player.android_tv     # <-- CHANGE to your Android TV (ADB) entity
+  sequence:
+    - variables:
+        ms: "{{ (seconds | float(0) * 1000) | int }}"
+    - repeat:
+        sequence:
+          - action: androidtv.adb_command
+            target: { entity_id: "{{ tv }}" }
+            data: { command: "sh /data/local/tmp/plexplay.sh seekto {{ ms }}" }
+          - variables:
+              last: "{{ ((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last }}"
+          - if: "{{ last.startswith('WAIT') or last == '' }}"
+            then: [ { delay: { milliseconds: 300 } } ]
+        until: "{{ not ((((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last).startswith('WAIT') or (((state_attr(tv, 'adb_response') or '') | trim).split('\n') | last) == '') or repeat.index >= 10 }}"
